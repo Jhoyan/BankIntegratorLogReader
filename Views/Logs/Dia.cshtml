@@ -1,0 +1,69 @@
+@model DateOnly
+@{
+    ViewData["Title"] = $"Logs de {Model:dd/MM/yyyy}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Logs de @Model.ToString("dd/MM/yyyy")</h1>
+    <a class="btn btn-outline-secondary btn-sm" asp-controller="Logs" asp-action="Index">&larr; Voltar ao catálogo</a>
+</div>
+
+<div class="row g-2 align-items-center mb-3" id="filtros">
+    <div class="col-12 col-md-4">
+        <input type="search" id="busca" class="form-control" placeholder="Pesquisar na mensagem..." />
+    </div>
+    <div class="col-12 col-md-4">
+        <input type="search" id="nao-contem" class="form-control" placeholder="Não possui (excluir palavra)..." />
+        <div class="form-check mt-1">
+            <input type="checkbox" class="form-check-input" id="nao-contem-multiplas">
+            <label class="form-check-label small text-muted" for="nao-contem-multiplas">
+                Separar por vírgula (várias palavras)
+            </label>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="btn-group" role="group" id="filtro-niveis" aria-label="Filtro por nível">
+            <input type="checkbox" class="btn-check" id="nivel-INF" value="INF" checked autocomplete="off">
+            <label class="btn btn-outline-primary btn-sm" for="nivel-INF">INF</label>
+
+            <input type="checkbox" class="btn-check" id="nivel-WRN" value="WRN" checked autocomplete="off">
+            <label class="btn btn-outline-warning btn-sm" for="nivel-WRN">WRN</label>
+
+            <input type="checkbox" class="btn-check" id="nivel-ERR" value="ERR" checked autocomplete="off">
+            <label class="btn btn-outline-danger btn-sm" for="nivel-ERR">ERR</label>
+
+            <input type="checkbox" class="btn-check" id="nivel-DBG" value="DBG" checked autocomplete="off">
+            <label class="btn btn-outline-secondary btn-sm" for="nivel-DBG">DBG</label>
+        </div>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-sm table-hover" id="tabela-logs">
+        <thead>
+            <tr>
+                <th class="ordenavel" data-ordenar-por="timestamp" style="width: 8rem;">Data</th>
+                <th class="ordenavel" data-ordenar-por="timestamp" style="width: 8rem;">Hora</th>
+                <th class="ordenavel" data-ordenar-por="nivel" style="width: 5rem;">Nível</th>
+                <th>Mensagem</th>
+            </tr>
+        </thead>
+        <tbody id="corpo-tabela">
+        </tbody>
+    </table>
+</div>
+
+<div class="d-flex justify-content-between align-items-center">
+    <div id="resumo-paginacao" class="text-muted small"></div>
+    <div class="btn-group">
+        <button class="btn btn-outline-secondary btn-sm" id="btn-anterior">&laquo; Anterior</button>
+        <button class="btn btn-outline-secondary btn-sm" id="btn-proxima">Próxima &raquo;</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const DATA_LOGS = "@Model.ToString("yyyy-MM-dd")";
+    </script>
+    <script src="~/js/logs.js" asp-append-version="true"></script>
+}
