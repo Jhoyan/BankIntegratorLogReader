@@ -38,6 +38,30 @@
     </div>
 </div>
 
+<div class="row g-2 align-items-center mb-3" id="filtro-periodo">
+    <div class="col-auto">
+        <label class="col-form-label small text-muted" for="hora-inicio">Período:</label>
+    </div>
+    <div class="col-auto">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">De</span>
+            <input type="time" id="hora-inicio" class="form-control" step="1" />
+        </div>
+    </div>
+    <div class="col-auto">
+        <div class="input-group input-group-sm">
+            <span class="input-group-text">Até</span>
+            <input type="time" id="hora-fim" class="form-control" step="1" />
+        </div>
+    </div>
+    <div class="col-auto">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-limpar-periodo">Limpar período</button>
+    </div>
+    <div class="col-auto">
+        <span id="erro-periodo" class="small text-danger d-none">A hora inicial deve ser menor ou igual à hora final.</span>
+    </div>
+</div>
+
 <div class="table-responsive">
     <table class="table table-sm table-hover" id="tabela-logs">
         <thead>

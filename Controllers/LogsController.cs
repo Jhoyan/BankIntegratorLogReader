@@ -37,7 +37,9 @@ namespace LeitorDeLogs.Controllers
             bool naoContemMultiplas = false,
             [FromQuery] string[]? niveis = null,
             string ordenarPor = "timestamp",
-            string ordem = "desc")
+            string ordem = "desc",
+            TimeOnly? horaInicio = null,
+            TimeOnly? horaFim = null)
         {
             if (pagina < 1)
             {
@@ -46,7 +48,26 @@ namespace LeitorDeLogs.Controllers
 
             tamanhoPagina = Math.Clamp(tamanhoPagina, 10, 1000);
 
+            if (horaInicio.HasValue && horaFim.HasValue && horaInicio.Value > horaFim.Value)
+            {
+                return BadRequest(new { erro = "A hora inicial deve ser menor ou igual à hora final." });
+            }
+
             var entradas = _catalogo.ObterEntradas(data).AsEnumerable();
+
+            if (horaInicio.HasValue || horaFim.HasValue)
+            {
+                // Compara na precisão de segundos (a mesma do campo de hora da tela),
+                // com os dois limites inclusivos: "até 10:30:15" inclui 10:30:15.999.
+                var inicio = horaInicio ?? TimeOnly.MinValue;
+                var fim = horaFim ?? TimeOnly.MaxValue;
+                entradas = entradas.Where(e =>
+                {
+                    var hora = TimeOnly.FromDateTime(e.Timestamp.DateTime);
+                    var horaSegundos = new TimeOnly(hora.Hour, hora.Minute, hora.Second);
+                    return horaSegundos >= inicio && horaSegundos <= fim;
+                });
+            }
 
             if (niveis is { Length: > 0 })
             {

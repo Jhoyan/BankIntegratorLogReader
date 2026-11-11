@@ -112,6 +112,17 @@ code {
   color: var(--cor-texto-muted);
 }
 
+/* Deixa o ícone do seletor de hora claro no tema escuro */
+input[type="time"].form-control {
+  color-scheme: dark;
+}
+
+.input-group-text {
+  background-color: var(--cor-fundo-elevado-2);
+  border-color: var(--cor-borda);
+  color: var(--cor-texto-muted);
+}
+
 .form-check-input {
   background-color: var(--cor-fundo-elevado);
   border-color: var(--cor-borda);

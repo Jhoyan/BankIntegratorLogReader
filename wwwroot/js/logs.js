@@ -10,6 +10,8 @@
         niveis: [],
         ordenarPor: "timestamp",
         ordem: "desc",
+        horaInicio: "",
+        horaFim: "",
     };
 
     const corpoTabela = document.getElementById("corpo-tabela");
@@ -21,6 +23,10 @@
     const checkNaoContemMultiplas = document.getElementById("nao-contem-multiplas");
     const filtroNiveis = document.getElementById("filtro-niveis");
     const cabecalhos = document.querySelectorAll("th.ordenavel");
+    const inputHoraInicio = document.getElementById("hora-inicio");
+    const inputHoraFim = document.getElementById("hora-fim");
+    const btnLimparPeriodo = document.getElementById("btn-limpar-periodo");
+    const erroPeriodo = document.getElementById("erro-periodo");
 
     let ultimoTotalFiltrado = 0;
     let debounceTimer = null;
@@ -45,6 +51,12 @@
             params.set("naoContemMultiplas", estado.naoContemMultiplas);
         }
         estado.niveis.forEach((n) => params.append("niveis", n));
+        if (estado.horaInicio) {
+            params.set("horaInicio", estado.horaInicio);
+        }
+        if (estado.horaFim) {
+            params.set("horaFim", estado.horaFim);
+        }
         return `/Logs/Dados?${params.toString()}`;
     }
 
@@ -133,7 +145,11 @@
         });
     }
 
+    let sequenciaRequisicao = 0;
+
     async function carregar() {
+        // Descarta respostas de requisições antigas que terminem depois da mais recente.
+        const minhaRequisicao = ++sequenciaRequisicao;
         corpoTabela.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">Carregando...</td></tr>`;
         try {
             const resposta = await fetch(montarUrl());
@@ -141,9 +157,15 @@
                 throw new Error(`Erro HTTP ${resposta.status}`);
             }
             const dados = await resposta.json();
+            if (minhaRequisicao !== sequenciaRequisicao) {
+                return;
+            }
             renderizarLinhas(dados.itens);
             atualizarPaginacao(dados.total, dados.totalFiltrado);
         } catch (erro) {
+            if (minhaRequisicao !== sequenciaRequisicao) {
+                return;
+            }
             corpoTabela.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Falha ao carregar os logs: ${escapeHtml(erro.message)}</td></tr>`;
         }
     }
@@ -191,6 +213,45 @@
             atualizarIndicadorOrdenacao();
             carregar();
         });
+    });
+
+    // O campo de hora pode devolver "HH:mm" ou "HH:mm:ss"; normaliza sempre para "HH:mm:ss".
+    function normalizarHora(valor) {
+        if (!valor) {
+            return "";
+        }
+        return valor.length === 5 ? `${valor}:00` : valor.substring(0, 8);
+    }
+
+    function aplicarPeriodo() {
+        const inicio = normalizarHora(inputHoraInicio.value);
+        const fim = normalizarHora(inputHoraFim.value);
+        const invalido = inicio !== "" && fim !== "" && inicio > fim;
+
+        inputHoraInicio.classList.toggle("is-invalid", invalido);
+        inputHoraFim.classList.toggle("is-invalid", invalido);
+        erroPeriodo.classList.toggle("d-none", !invalido);
+        if (invalido) {
+            return;
+        }
+
+        if (inicio === estado.horaInicio && fim === estado.horaFim) {
+            return;
+        }
+
+        estado.horaInicio = inicio;
+        estado.horaFim = fim;
+        estado.pagina = 1;
+        carregar();
+    }
+
+    inputHoraInicio.addEventListener("change", aplicarPeriodo);
+    inputHoraFim.addEventListener("change", aplicarPeriodo);
+
+    btnLimparPeriodo.addEventListener("click", () => {
+        inputHoraInicio.value = "";
+        inputHoraFim.value = "";
+        aplicarPeriodo();
     });
 
     btnAnterior.addEventListener("click", () => {
